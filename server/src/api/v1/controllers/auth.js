@@ -1,11 +1,15 @@
 const express = require('express');
 
+// const {
+//     registerWithPassword,
+//     registerWithGoogle,
+//     registerWithLinkedin,
+//     registerWithGithub,
+//     registerWithFacebook
+// } = require('../services/auth');
+
 const {
-    registerWithPassword,
-    registerWithGoogle,
-    registerWithLinkedin,
-    registerWithGithub,
-    registerWithFacebook
+    googleOauthHandler
 } = require('../services/auth');
 
 // Register Users
@@ -88,6 +92,7 @@ exports.registerWithPassword = async (req, res, next) => {
     
 }
 exports.registerWithGoogle = async (req, res, next) => {
+    const googleCredentials = await googleOauthHandler();
 
 }
 exports.registerWithLinkedin = async (req, res, next) => {
