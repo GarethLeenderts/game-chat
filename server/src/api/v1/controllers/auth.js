@@ -148,7 +148,7 @@ exports.registerWithGoogle = async (req, res, next) => {
 
     // create access and refresh tokens
     // const access_token = jwt.sign(object, privateKey, options);
-    const access_token = jwt.sign({...user.toJSON(), session: session._id}, 
+    const accessToken = jwt.sign({...user.toJSON(), session: session._id}, 
                                    privateKey, 
                                    {
                                        expiresIn: process.env.ACCESS_TOKEN_TTL, // 15 minutes
@@ -156,7 +156,7 @@ exports.registerWithGoogle = async (req, res, next) => {
                                     }); // needs editing
    
    
-    const refresh_token = jwt.sign({...user.toJSON(), session: session._id}, 
+    const refreshToken = jwt.sign({...user.toJSON(), session: session._id}, 
                                    privateKey, 
                                    {
                                        expiresIn: process.env.REFRESH_TOKEN_TTL, // 1 year
@@ -166,9 +166,9 @@ exports.registerWithGoogle = async (req, res, next) => {
 
 
     // set cookies
-    res.cookie("accessToken", access_token, accessTokenCookieOptions);
+    res.cookie("accessToken", accessToken, accessTokenCookieOptions);
     
-    res.cookie("refreshToken", refresh_token, refreshTokenCookieOptions);
+    res.cookie("refreshToken", refreshToken, refreshTokenCookieOptions);
 
     // redirect back to the client
     const clientEndpoint = "http://localhost:3000";
