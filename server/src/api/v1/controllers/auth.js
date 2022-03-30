@@ -1,4 +1,5 @@
 const express = require('express');
+const jwt = require('jsonwebtoken');
 
 // const {
 //     registerWithPassword,
@@ -9,7 +10,7 @@ const express = require('express');
 // } = require('../services/auth');
 
 const {
-    googleOauthHandler
+    googleOauthHandler, getGoogleOauthTokens, getGoogleUser
 } = require('../services/auth');
 
 // Register Users
@@ -92,7 +93,50 @@ exports.registerWithPassword = async (req, res, next) => {
     
 }
 exports.registerWithGoogle = async (req, res, next) => {
-    const googleCredentials = await googleOauthHandler();
+    // const googleCredentials = await googleOauthHandler();
+
+    // get code from query string
+    const code = req.query.code; // will be a string
+
+    // get id and access token with the code
+    const { id_token, access_token } = await getGoogleOauthTokens({ code });
+
+    // get user with tokens
+    // const isVerified = jwt.verify(id_token);
+    // const googleUser = jwt.decode(id_token);
+    // const googleUser = await getGoogleUser({ id_token, access_token });
+    const googleUser = await getGoogleUser(id_token, access_token);
+
+    if (!googleUser.verified_email) {
+        return res.status(403).send('Google account is not verified');
+    }
+
+    // upsert user
+    // find user by email and google_id
+    const emailExists = await mongoose.findOne({email: googleUser.email});
+    const googleUserExists = await mongoose.findOne({google_id: googleUser.id});
+
+    if (emailExists || googleUserExists) {
+        return res.status(403).send('User already exists');
+    }
+
+    // User model from Models
+    const user = User.create({
+        email: googleUser.email,
+        username: googleUser.name,
+        picture: googleUser.picture,
+        google_id: googleUser.id,
+        google_email: googleUser.email
+    });
+
+    // create session
+    const session = await createSession(user._id, req.get('user-agent') || '');
+
+    // create access and refresh tokens
+
+    // set cookies
+
+    // redirect back to the client
 
 }
 exports.registerWithLinkedin = async (req, res, next) => {

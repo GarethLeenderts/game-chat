@@ -37,10 +37,12 @@ const router = express.Router();
 // router.post('/login/:strategy', checkAuthenticated, loginUser);
 
 router.post('/register', checkAuthenticated, checkIfUserExists, registerWithPassword);
-router.post('/register/oauth/google', checkAuthenticated, checkIfUserExists, registerWithGoogle);
+// router.post('/register/oauth/google', checkAuthenticated, checkIfUserExists, registerWithGoogle);
 router.post('/register/oauth/linkedin', checkAuthenticated, checkIfUserExists, registerWithLinkedin);
 router.post('/register/oauth/github', checkAuthenticated, checkIfUserExists, registerWithGithub);
 router.post('/register/oauth/facebook', checkAuthenticated, checkIfUserExists, registerWithFacebook);
+
+router.get('/register/oauth/google', registerWithGoogle);
 
 router.post('/login', checkAuthenticated, loginWithPassword);
 router.post('/login/oauth/google', checkAuthenticated, loginWithGoogle);
