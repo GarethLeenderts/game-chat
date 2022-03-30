@@ -13,6 +13,20 @@ const {
     googleOauthHandler, getGoogleOauthTokens, getGoogleUser
 } = require('../services/auth');
 
+const accessTokenCookieOptions = {
+    maxAge: 900000, // 15 mins
+    httpOnly: true,
+    domain: "localhost",
+    path: "/",
+    sameSite: "lax",
+    secure: false,
+  };
+  
+  const refreshTokenCookieOptions = {
+    ...accessTokenCookieOptions,
+    maxAge: 3.154e10, // 1 year
+  };
+
 // Register Users
 // Registration flow:
 //     Attempt to register, checkifAlreadyLoggedIn, checkIfUserExists,
@@ -133,10 +147,32 @@ exports.registerWithGoogle = async (req, res, next) => {
     const session = await createSession(user._id, req.get('user-agent') || '');
 
     // create access and refresh tokens
+    // const access_token = jwt.sign(object, privateKey, options);
+    const access_token = jwt.sign({...user.toJSON(), session: session._id}, 
+                                   privateKey, 
+                                   {
+                                       expiresIn: process.env.ACCESS_TOKEN_TTL, // 15 minutes
+                                       algorithm: "RS256"
+                                    }); // needs editing
+   
+   
+    const refresh_token = jwt.sign({...user.toJSON(), session: session._id}, 
+                                   privateKey, 
+                                   {
+                                       expiresIn: process.env.REFRESH_TOKEN_TTL, // 1 year
+                                       algorithm: "RS256"
+                                    }); // needs editing
+    
+
 
     // set cookies
+    res.cookie("accessToken", access_token, accessTokenCookieOptions);
+    
+    res.cookie("refreshToken", refresh_token, refreshTokenCookieOptions);
 
     // redirect back to the client
+    const clientEndpoint = "http://localhost:3000";
+    res.redirect(clientEndpoint);
 
 }
 exports.registerWithLinkedin = async (req, res, next) => {
