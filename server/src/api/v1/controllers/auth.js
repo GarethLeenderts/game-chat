@@ -240,7 +240,7 @@ exports.registerWithGoogle = async (req, res, next) => {
         return res.status(403).send('Google account is not verified');
     }
 
-    // upsert user
+    // upsert user /
     // find user by email and google_id
     const emailExists = await mongoose.findOne({email: googleUser.email});
     const googleUserExists = await mongoose.findOne({google_id: googleUser.id});
@@ -307,7 +307,7 @@ exports.loginWithGoogle = async (req, res, next) => {
     // 5. If successful:
     //    5.1 create a new session
     //    5.2 redirect user to http://localhost:3000/:username
-    
+
 
 }
 // exports.loginWithLinkedin = async (req, res, next) => {
