@@ -16,19 +16,19 @@ const {
     googleOauthHandler, getGoogleOauthTokens, getGoogleUser, createSession
 } = require('../services/auth');
 
-const accessTokenCookieOptions = {
-    maxAge: 900000, // 15 mins
-    httpOnly: true,
-    domain: "localhost",
-    path: "/",
-    sameSite: "lax",
-    secure: false,
-  };
+// const accessTokenCookieOptions = {
+//     maxAge: 900000, // 15 mins
+//     httpOnly: true,
+//     domain: "localhost",
+//     path: "/",
+//     sameSite: "lax",
+//     secure: false,
+//   };
   
-  const refreshTokenCookieOptions = {
-    ...accessTokenCookieOptions,
-    maxAge: 3.154e10, // 1 year
-  };
+//   const refreshTokenCookieOptions = {
+//     ...accessTokenCookieOptions,
+//     maxAge: 3.154e10, // 1 year
+//   };
 
 // Register Users
 // Registration flow:
@@ -298,7 +298,41 @@ exports.loginWithPassword = async (req, res, next) => {
     //    3.1 create a new session
     //    3.2 redirect user to http://localhost:3000/:username
     
-}
+    // loginIdentifier = username or email
+    const { loginIdentifier, password } = req.body;
+
+    try {
+        const user = await mongoose.findOne({email: loginIdentifier});
+        // if can't match email, try match username
+        if (!user){
+            user = await mongoose.findOne({username: loginIdentifier});
+            
+            // if can't match username, we now know that the user doesn't exist
+            if (!user){
+                return res.status(403).json({message: "User doesn't exists. Please register."})
+                    .redirect("http://localhost:3000/register");
+            }
+        }
+
+        const passwordValid = await bcrypt.compare(password, user.password);
+
+        if (!passwordValid) {
+            return res.status(403).json({message: "Password incorrect. Please try again"})
+        }
+
+        // create session
+        req.session.user_id = user._id;
+        req.session.username = user.username;
+        req.session.role = user.role;
+
+        // redirect the client
+        const clientEndpoint = `http://localhost:3000/${user.username}`;
+        res.redirect(clientEndpoint);
+    } catch (error) {
+        console.log(error);
+    };
+};
+
 exports.loginWithGoogle = async (req, res, next) => {
     // 1. get code from query string
     // 2. use code to get id_token and access token from Google OAuth
@@ -308,8 +342,41 @@ exports.loginWithGoogle = async (req, res, next) => {
     //    5.1 create a new session
     //    5.2 redirect user to http://localhost:3000/:username
 
+    try {
+        // get code from query string
+        const code = req.query.code; // will be a string
 
-}
+        // get id and access token with the code
+        const { id_token, access_token } = await getGoogleOauthTokens({ code });
+
+        // get user with tokens
+        const isVerified = jwt.verify(id_token);
+        if (!isVerified){
+            return res.json({message: 'User not verfied. id_token has been tampered with'});
+        }
+        const googleUser = jwt.decode(id_token);
+
+        // find user by email or google_id
+        const user = await mongoose.findOne({google_email: googleUser.email});
+        // const user = await mongoose.findOne({google_id: googleUser.id});
+
+        if (!user) {
+            return res.status(403).json({message: "User doesn't exists. Please register."})
+            .redirect("http://localhost:3000/register");
+        };
+
+        // create session
+        req.session.user_id = user._id;
+        req.session.username = user.username;
+        req.session.role = user.role;
+
+        // redirect the client
+        const clientEndpoint = `http://localhost:3000/${user.username}`;
+        res.redirect(clientEndpoint);
+    } catch (error) {
+        console.log(error);
+    };
+};
 // exports.loginWithLinkedin = async (req, res, next) => {
 
 // }
