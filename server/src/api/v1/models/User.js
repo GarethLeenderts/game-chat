@@ -16,3 +16,13 @@
 //     twitterCredentials: {twitter_id: String, // hashed?
 //                          twitterEmail: Email},
 // }
+
+// _id:
+// email:
+// username:
+// picture:
+// role: [admin, user, superuser, guest]
+// google_id:
+// google_email:
+// linkedin_id:
+// linkedin_email:
