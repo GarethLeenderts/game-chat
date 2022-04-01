@@ -367,6 +367,37 @@ exports.loginWithGoogle = async (req, res, next) => {
 //     checkUserAuthorisation, compareEmailToOtherEmails, checkEmailDoesNotExistForAnotherUser,
 //     updateUserDetailsWithNewStrategy
 
+exports.addPasswordLogin = async (req, res, next) => {
+    // 1. get user._id from session
+    // 2. find that user in DB
+    // 3. hash entered password
+    // 4. if user password is empty: set password to our entered password
+    // 5. if all successful: respond with success message
+
+    try {
+        const { password } = req.password;
+
+        let user = mongoose.findOne({ _id: req.session.user_id });
+
+        if (!user) {
+            return res.status(403).json({message: "User could not be found in the database!"});
+        };
+
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt(password, saltRounds);
+
+        user.password = hashedPassword;
+
+        // update user in DB
+        await user.save();
+
+        // respond to client
+        res.status(200).json({message: "You can now login using your username/email and password!"});
+    } catch (error) {
+        console.log(error);
+    };
+};
+
 exports.addGoogleLogin = async (req, res, next) => {
     // 1. get code from query string
     // 2. use code to get id_token and access token from Google OAuth
@@ -405,6 +436,8 @@ exports.addGoogleLogin = async (req, res, next) => {
         if (!user.picture) {
             user.picture = googleUser.picture;
         };
+
+        await user.save();
 
         // create session
         // req.session.user_id = user._id;
