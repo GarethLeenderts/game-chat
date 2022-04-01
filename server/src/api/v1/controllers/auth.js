@@ -35,35 +35,7 @@ const {
 //     Attempt to register, checkifAlreadyLoggedIn, checkIfUserExists,
 //     makeSurePasswordSecure(ie. at least one number and one special character),
 //     hashPassword, saveNewUser, redirectToLogin (or log user in automatically)
-// exports.registerUser = async (req, res, next) => {
-//     const { registrationStrategy } = req.params;
 
-//     if (registrationStrategy === 'password') {
-//         const { email, password } = req.body;
-
-//         await registerWithPassword(email, password);
-//     }
-//     else if (registrationStrategy === 'google') {
-//         const googleCredentials = req.body;
-
-//         await registerWithGoogle(googleCredentials);
-//     }
-//     // else if (registrationStrategy === 'linkedin') {
-//     //     const linkedinCredentials = req.body;
-
-//     //     await registerWithLinkedin(linkedinCredentials);
-//     // }
-//     // else if (registrationStrategy === 'github') {
-//     //     const githubCredentials = req.body;
-
-//     //     await registerWithGithub(githubCredentials);
-//     // }
-//     // else if (registrationStrategy === 'facebook') {
-//     //     const facebookCredentials = req.body;
-
-//     //     await registerWithFacebook(facebookCredentials);
-//     // }
-// };
 
 exports.registerWithPassword = async (req, res, next) => {
     // 1. Check username and password availability
@@ -219,58 +191,59 @@ exports.registerWithGoogle = async (req, res, next) => {
     // 8. Send session cookie back to the client
     // 9. Redirect user
 
-    // const googleCredentials = await googleOauthHandler();
+    try {
+        // get code from query string
+        const code = req.query.code; // will be a string
 
-    // get code from query string
-    const code = req.query.code; // will be a string
+        // get id and access token with the code
+        const { id_token, access_token } = await getGoogleOauthTokens({ code });
 
-    // get id and access token with the code
-    const { id_token, access_token } = await getGoogleOauthTokens({ code });
+        // get user with tokens
+        const isVerified = jwt.verify(id_token);
+        if (!isVerified){
+            return res.json('User not verfied. id_token has been tampered with');
+        }
+        const googleUser = jwt.decode(id_token);
+        // const googleUser = await getGoogleUser({ id_token, access_token });
+        // const googleUser = await getGoogleUser(id_token, access_token);
 
-    // get user with tokens
-    const isVerified = jwt.verify(id_token);
-    if (!isVerified){
-        return res.json('User not verfied. id_token has been tampered with');
+        if (!googleUser.verified_email) {
+            return res.status(403).send('Google account is not verified');
+        }
+
+        // find user by email and/or google_id
+        const emailExists = await mongoose.findOne({email: googleUser.email});
+        const googleUserExists = await mongoose.findOne({google_id: googleUser.id});
+
+        if (emailExists || googleUserExists) {
+            return res.status(403).send('User already exists');
+        }
+
+        // User model from Models
+        const user = User.create({
+            email: googleUser.email,
+            username: googleUser.name,
+            picture: googleUser.picture,
+            google_id: googleUser.id,
+            google_email: googleUser.email,
+            role: 'user',
+        });
+
+        // create session
+        // const session = await createSession();
+        req.session.user_id = user._id;
+        req.session.username = user.username;
+        req.session.role = user.role;
+
+        // redirect the client
+        // const clientRoot = process.env.CLIENT_DOMAIN;
+        // const clientEndpoint = `${clientRoot}/${user.username}`;
+        const clientEndpoint = `http://localhost:3000/${user.username}`;
+        res.redirect(clientEndpoint);
+    } catch (error) {
+        console.log(error);
     }
-    const googleUser = jwt.decode(id_token);
-    // const googleUser = await getGoogleUser({ id_token, access_token });
-    // const googleUser = await getGoogleUser(id_token, access_token);
-
-    if (!googleUser.verified_email) {
-        return res.status(403).send('Google account is not verified');
-    }
-
-    // upsert user /
-    // find user by email and google_id
-    const emailExists = await mongoose.findOne({email: googleUser.email});
-    const googleUserExists = await mongoose.findOne({google_id: googleUser.id});
-
-    if (emailExists || googleUserExists) {
-        return res.status(403).send('User already exists');
-    }
-
-    // User model from Models
-    const user = User.create({
-        email: googleUser.email,
-        username: googleUser.name,
-        picture: googleUser.picture,
-        google_id: googleUser.id,
-        google_email: googleUser.email,
-        role: 'user',
-    });
-
-    // create session
-    // const session = await createSession();
-    req.session.user_id = user._id;
-    req.session.username = user.username;
-    req.session.role = user.role;
-
-    // set cookies
-    // res.session();
-
-    // redirect the client
-    const clientEndpoint = `http://localhost:3000/${user.username}`;
-    res.redirect(clientEndpoint);
+    
 
 }
 // exports.registerWithLinkedin = async (req, res, next) => {
@@ -393,3 +366,74 @@ exports.loginWithGoogle = async (req, res, next) => {
 // Register New Strategy Flow:
 //     checkUserAuthorisation, compareEmailToOtherEmails, checkEmailDoesNotExistForAnotherUser,
 //     updateUserDetailsWithNewStrategy
+
+exports.addGoogleLogin = async (req, res, next) => {
+    // 1. get code from query string
+    // 2. use code to get id_token and access token from Google OAuth
+    // 3. verify the id_token jwt and decode it
+    // 4. find user by matching googleUser.email or logged-in user's email
+    // 5. If successful:
+    //    5.1 Add google_id and google_email to User's model
+
+
+    try {
+        // get code from query string
+        const code = req.query.code; // will be a string
+
+        // get id and access token with the code
+        const { id_token, access_token } = await getGoogleOauthTokens({ code });
+
+        // get user with tokens
+        const isVerified = jwt.verify(id_token);
+        if (!isVerified){
+            return res.json({message: 'User not verfied. id_token has been tampered with'});
+        }
+        const googleUser = jwt.decode(id_token);
+
+        // find user by email or google_id
+        const user = await mongoose.findOne({_id: req.session.user_id});
+        // const user = await mongoose.findOne({google_id: googleUser.id});
+
+        if (!user) {
+            return res.status(403).json({message: "User doesn't exists. Please register."})
+            .redirect("http://localhost:3000/register");
+        };
+
+        user.google_email = googleUser.email;
+        user.google_id = googleUser.id;
+
+        if (!user.picture) {
+            user.picture = googleUser.picture;
+        };
+
+        // create session
+        // req.session.user_id = user._id;
+        // req.session.username = user.username;
+        // req.session.role = user.role;
+
+        // redirect the client
+        // const clientEndpoint = `http://localhost:3000/${user.username}`;
+        // res.redirect(clientEndpoint);
+
+        res.status(200).json({message: "You can now login to our app with Google!"});
+    } catch (error) {
+        console.log(error);
+    };
+};
+
+
+
+// OTHER FUNCTIONALITY
+exports.resetPassword = async (req, res, next) => {
+
+};
+exports.forgotPassword = async (req, res, next) => {
+
+};
+exports.confirmEmail = async (req, res, next) => {
+
+};
+exports.logout = (req, res, next) => {
+    req.session.destroy();
+    res.redirect('http://localhost:3000/login').res.json({message: "You have successfully logged out."});
+};

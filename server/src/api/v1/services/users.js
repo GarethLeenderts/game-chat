@@ -13,8 +13,8 @@ exports.generateUniqueUsername = async () => {
             usernameIsUnique = true;
         } else {
             username = genUsername.generateUsername("-",6);
-        }
-    }
+        };
+    };
 
     return username;
-}
+};
