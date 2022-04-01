@@ -73,12 +73,17 @@ exports.registerWithPassword = async (req, res, next) => {
         const hashedPassword = bcrypt(password, saltRounds);
     
         // add user to database
-        const user = await User.create({
+        // note: const user = await User.create({userId: id})
+        // is equivalent to these 2 lines::
+        //    const user = new User({userId: id});
+        //    await user.save();
+        const user = new User({
             username,
             email,
             password: hashedPassword,
             role: 'user',
         });
+        await user.save();
 
         // create session
         // const session = await createSession();
@@ -130,8 +135,8 @@ exports.registerWithPassword = async (req, res, next) => {
 
 //     // upsert user
 //     // find user by email and google_id
-//     const emailExists = await mongoose.findOne({email: googleUser.email});
-//     const googleUserExists = await mongoose.findOne({google_id: googleUser.id});
+//     const emailExists = await User.findOne({email: googleUser.email});
+//     const googleUserExists = await User.findOne({google_id: googleUser.id});
 
 //     if (emailExists || googleUserExists) {
 //         return res.status(403).send('User already exists');
@@ -212,15 +217,15 @@ exports.registerWithGoogle = async (req, res, next) => {
         }
 
         // find user by email and/or google_id
-        const emailExists = await mongoose.findOne({email: googleUser.email});
-        const googleUserExists = await mongoose.findOne({google_id: googleUser.id});
+        const emailExists = await User.findOne({email: googleUser.email});
+        const googleUserExists = await User.findOne({google_id: googleUser.id});
 
         if (emailExists || googleUserExists) {
             return res.status(403).send('User already exists');
         }
 
         // User model from Models
-        const user = User.create({
+        const user = new User.create({
             email: googleUser.email,
             username: googleUser.name,
             picture: googleUser.picture,
@@ -274,18 +279,27 @@ exports.loginWithPassword = async (req, res, next) => {
     // loginIdentifier = username or email
     const { loginIdentifier, password } = req.body;
 
+    // const user = await User.$where(`this.email === ${loginIdentifier} || this.username === ${loginIdentifier}`);
+    // const user = await User.or([{ email: loginIdentifier }, { username: loginIdentifier }]);
+
     try {
-        const user = await mongoose.findOne({email: loginIdentifier});
-        // if can't match email, try match username
-        if (!user){
-            user = await mongoose.findOne({username: loginIdentifier});
+        // const user = await User.findOne({email: loginIdentifier});
+        // // if can't match email, try match username
+        // if (!user){
+        //     user = await User.findOne({username: loginIdentifier});
             
-            // if can't match username, we now know that the user doesn't exist
-            if (!user){
-                return res.status(403).json({message: "User doesn't exists. Please register."})
-                    .redirect("http://localhost:3000/register");
-            }
-        }
+        //     // if can't match username, we now know that the user doesn't exist
+        //     if (!user){
+        //         return res.status(403).json({message: "User doesn't exists. Please register."})
+        //             .redirect("http://localhost:3000/register");
+        //     }
+        // }
+        const user = await User.or([{ email: loginIdentifier }, { username: loginIdentifier }]);
+
+        if (!user){
+            return res.status(403).json({message: "User doesn't exists. Please register."})
+                .redirect("http://localhost:3000/register");
+        };
 
         const passwordValid = await bcrypt.compare(password, user.password);
 
@@ -330,8 +344,8 @@ exports.loginWithGoogle = async (req, res, next) => {
         const googleUser = jwt.decode(id_token);
 
         // find user by email or google_id
-        const user = await mongoose.findOne({google_email: googleUser.email});
-        // const user = await mongoose.findOne({google_id: googleUser.id});
+        const user = await User.findOne({google_email: googleUser.email});
+        // const user = await User.findOne({google_id: googleUser.id});
 
         if (!user) {
             return res.status(403).json({message: "User doesn't exists. Please register."})
@@ -377,7 +391,7 @@ exports.addPasswordLogin = async (req, res, next) => {
     try {
         const { password } = req.password;
 
-        let user = mongoose.findOne({ _id: req.session.user_id });
+        let user = User.findOne({ _id: req.session.user_id });
 
         if (!user) {
             return res.status(403).json({message: "User could not be found in the database!"});
@@ -422,8 +436,8 @@ exports.addGoogleLogin = async (req, res, next) => {
         const googleUser = jwt.decode(id_token);
 
         // find user by email or google_id
-        const user = await mongoose.findOne({_id: req.session.user_id});
-        // const user = await mongoose.findOne({google_id: googleUser.id});
+        const user = await User.findOne({_id: req.session.user_id});
+        // const user = await User.findOne({google_id: googleUser.id});
 
         if (!user) {
             return res.status(403).json({message: "User doesn't exists. Please register."})
