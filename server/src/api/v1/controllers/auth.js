@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 
 
 const { generateUniqueUsername } = require('../services/users');
+const User = require('../models/User');
 
 // const {
 //     registerWithPassword,
@@ -47,10 +48,9 @@ exports.registerWithPassword = async (req, res, next) => {
 
     const { username, email, password} = req.body;
 
-
     try {
         // Check if username exists
-        if (username = ""){
+        if (username == ""){
             const username = await generateUniqueUsername();
             const userNameExists = false;
         } else {
@@ -217,8 +217,10 @@ exports.registerWithGoogle = async (req, res, next) => {
         }
 
         // find user by email and/or google_id
-        const emailExists = await User.findOne({email: googleUser.email});
-        const googleUserExists = await User.findOne({google_id: googleUser.id});
+        // const emailExists = await User.findOne({email: googleUser.email});
+        // const googleUserExists = await User.findOne({google_id: googleUser.id});
+        const emailExists = await User.exists({email: googleUser.email});
+        const googleUserExists = await User.exists({google_id: googleUser.id});
 
         if (emailExists || googleUserExists) {
             return res.status(403).send('User already exists');
@@ -442,6 +444,11 @@ exports.addGoogleLogin = async (req, res, next) => {
         if (!user) {
             return res.status(403).json({message: "User doesn't exists. Please register."})
             .redirect("http://localhost:3000/register");
+        };
+        
+        if (user.email !== googleUser.email) {
+            return res.status(403).json({message: "Google account email doesn't match your email. Please make sure they match."});
+            // .redirect("http://localhost:3000/register");
         };
 
         user.google_email = googleUser.email;
