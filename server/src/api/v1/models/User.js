@@ -78,6 +78,9 @@ const userSchema = new mongoose.Schema(
             lowercase: true,
             match: RFC5322_EMAIL_REGEX,
         },
+    },
+    {
+        collection: 'Users',
     }
 );
 

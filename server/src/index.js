@@ -9,7 +9,7 @@ const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoSessionStore = require('connect-mongo');
 
-// const AuthRouter = require('./api/v1/routes/auth.js');
+const AuthRouter = require('./api/v1/routes/auth.js');
 // const UserRouter = require('./api/v1/routes/users');
 
 
@@ -30,7 +30,8 @@ app.use(express.urlencoded({ extended: false }));
 
 // ======= SESSION MIDDLEWARE =======
 const mongoStoreOptions = {
-    mongoUrl: 'mongodb://localhost/test-app',
+    // mongoUrl: 'mongodb://localhost/test-app',
+    mongoUrl: process.env.MONGO_CONNECTION_URL_SessionsDB,
     collectionName: 'authentication-sessions',
     ttl: 14 * 24 * 60 * 60, // = 14 days. Default
     autoRemove: 'native', // Default
@@ -54,14 +55,14 @@ app.use(session(sessionOptions));
 
 
 // ======= ROUTER MIDDLEWARE =======
-// router.use('/auth', authRoutes);
+router.use('/auth', AuthRouter);
 // router.use('/:username', protectRoute, UserRouter);
 // router.use('/game', gameRoutes);
 
 
 // ------- Connect to MongoDB -------
-// const MONGO_CONNECTION_URL = process.env.MONGO_CONNECTION_URL
-// mongoose.connect(CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
+const MONGO_CONNECTION_URL = process.env.MONGO_CONNECTION_URL_UsersDB;
+mongoose.connect(CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true });
 
 PORT = 5000 || process.env.PORT;
 app.listen(PORT, console.log(`Server listenting on port ${PORT}`));
