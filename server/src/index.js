@@ -65,4 +65,4 @@ const MONGO_CONNECTION_URL = process.env.MONGO_CONNECTION_URL_UsersDB;
 mongoose.connect(CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true });
 
 PORT = 5000 || process.env.PORT;
-app.listen(PORT, console.log(`Server listenting on port ${PORT}`));
+app.listen(PORT, console.log(`Server listening on port ${PORT}`));
