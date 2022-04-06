@@ -85,12 +85,12 @@ const RegistrationForm = () => {
                     {/* <button href={getGoogleOAuthURLRegister()}>withGoogle</button> */}
                     <button onClick={handleClick}>withGoogle</button>
                 </div>
-                {/* <div>
+                <div>
                     <h2>{process.env.REACT_APP_PUBLIC_SERVER_ENDPOINT}</h2>
                     <h2>{process.env.REACT_APP_PUBLIC_GOOGLE_OAUTH_CLIENT_ID}</h2>
                     <h2>{process.env.REACT_APP_PUBLIC_GOOGLE_OAUTH_REDIRECT_URL_register}</h2>
                     <h2>{process.env.REACT_APP_PUBLIC_GOOGLE_OAUTH_REDIRECT_URL_login}</h2>
-                </div> */}
+                </div>
                 {/* <div>
                     <button>withLinkedIn</button>
                 </div>
