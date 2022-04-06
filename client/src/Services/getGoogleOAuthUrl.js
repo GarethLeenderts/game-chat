@@ -7,7 +7,7 @@ const getGoogleOAuthURL = () => {
   
     const options = {
       redirect_uri: process.env.PUBLIC_GOOGLE_OAUTH_REDIRECT_URL,
-      client_id: process.env.PUBLIC_GOOGLE_CLIENT_ID,
+      client_id: process.env.PUBLIC_GOOGLE_OAUTH_CLIENT_ID,
       access_type: "offline",
       response_type: "code",
       prompt: "consent",
