@@ -1,9 +1,9 @@
 import React from 'react';
 
-import getGoogleOAuthURL from '../../Utils/getGoogleOAuthUrl';
+import {getGoogleOAuthURLLogin} from '../../Services/getGoogleOAuthUrl';
 
 // const serverLocation = "http://localhost:5000";
-const serverLocation = process.env.PUBLIC_SERVER_ENDPOINT;
+const serverLocation = process.env.REACT_APP_PUBLIC_SERVER_ENDPOINT;
 
 const LoginForm = () => {
     // const renderErrorMessage = () => { 
@@ -35,10 +35,10 @@ const LoginForm = () => {
             </div>
             <div>
                 <div>
-                    <a href={getGoogleOAuthURL()}>Login with Google</a>
+                    <a href={getGoogleOAuthURLLogin()}>Login with Google</a>
                 </div>
                 <div>
-                    <button href={getGoogleOAuthURL()}>withGoogle</button>
+                    <button href={getGoogleOAuthURLLogin()}>withGoogle</button>
                 </div>
                 {/* <div>
                     <button>withLinkedIn</button>

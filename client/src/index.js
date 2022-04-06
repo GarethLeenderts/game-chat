@@ -1,11 +1,9 @@
-import dotenv from 'dotenv';
+// import dotenv from 'dotenv/config';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-
-dotenv.config();
 
 ReactDOM.render(
   <React.StrictMode>

@@ -16,8 +16,8 @@ const RFC5322_EMAIL_REGEX = `/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+
 
 const userSchema = new mongoose.Schema(
     {
-        // _id: {type: String, default: generateUUID()},
-        _id: new mongoose.Types.ObjectId(),
+        // _id: {type: String, default: generateUUID()}, 2
+        _id: mongoose.ObjectId, //Number, //String, //new mongoose.Types.ObjectId(),
         email: {
             type: String, 
             required: true, 
@@ -86,4 +86,5 @@ const userSchema = new mongoose.Schema(
 
 const UserModel = mongoose.model("User", userSchema);
 
-export default UserModel;
+// export default UserModel;
+exports.default = UserModel;

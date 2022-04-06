@@ -1,11 +1,11 @@
 import React from 'react';
 import axios from 'axios';
 
-import getGoogleOAuthURL from '../../Services/getGoogleOAuthUrl';
+import {getGoogleOAuthURLRegister} from '../../Services/getGoogleOAuthUrl';
 import { isEmailValid, isPasswordValid, doPasswordsMatch } from '../../Services/auth';
 
 // const serverLocation = "http://localhost:5000";
-const serverEndpoint = process.env.PUBLIC_SERVER_ENDPOINT;
+const serverEndpoint = process.env.REACT_APP_PUBLIC_SERVER_ENDPOINT;
 
 
 const RegistrationForm = () => {
@@ -40,10 +40,17 @@ const RegistrationForm = () => {
 
         try {
             const response = await axios.post(`${serverEndpoint}/auth/register`, formData);
+            return console.log(response);
         } catch (error) {
             console.log(error);
         };
-    }
+    };
+
+    const handleClick = () => {
+        const query = getGoogleOAuthURLRegister();
+        console.log(query);
+    };
+
     return (
         <div>
             <div><h3>registrationForm</h3></div>
@@ -72,11 +79,18 @@ const RegistrationForm = () => {
             </div>
             <div>
                 <div>
-                    <a href={getGoogleOAuthURL()}>Register with Google</a>
+                    <a href={getGoogleOAuthURLRegister()}>Register with Google</a>
                 </div>
                 <div>
-                    <button href={getGoogleOAuthURL()}>withGoogle</button>
+                    {/* <button href={getGoogleOAuthURLRegister()}>withGoogle</button> */}
+                    <button onClick={handleClick}>withGoogle</button>
                 </div>
+                {/* <div>
+                    <h2>{process.env.REACT_APP_PUBLIC_SERVER_ENDPOINT}</h2>
+                    <h2>{process.env.REACT_APP_PUBLIC_GOOGLE_OAUTH_CLIENT_ID}</h2>
+                    <h2>{process.env.REACT_APP_PUBLIC_GOOGLE_OAUTH_REDIRECT_URL_register}</h2>
+                    <h2>{process.env.REACT_APP_PUBLIC_GOOGLE_OAUTH_REDIRECT_URL_login}</h2>
+                </div> */}
                 {/* <div>
                     <button>withLinkedIn</button>
                 </div>

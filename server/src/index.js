@@ -20,7 +20,12 @@ const router = express.Router();
 
 // ======= CORS MIDDLEWARE =======
 const corsOptions = {
-    origin: "http://localhost:3000",
+    origin: [
+        "http://localhost:3000", 
+        "https://localhost:3000", 
+        "https://oauth2.googleapis.com",
+        "https://www.googleapis.com",
+        "*"],
     methods: "GET,HEAD,PUT,POST,PATCH,DELETE"
 }
 app.use(cors(corsOptions))
@@ -59,10 +64,12 @@ router.use('/auth', AuthRouter);
 // router.use('/:username', protectRoute, UserRouter);
 // router.use('/game', gameRoutes);
 
+app.use(router);
+
 
 // ------- Connect to MongoDB -------
 const MONGO_CONNECTION_URL = process.env.MONGO_CONNECTION_URL_UsersDB;
-mongoose.connect(CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true });
+const mongoConnection = mongoose.connect(MONGO_CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true });
 
 PORT = 5000 || process.env.PORT;
 app.listen(PORT, console.log(`Server listening on port ${PORT}`));

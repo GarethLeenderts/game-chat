@@ -78,6 +78,7 @@ exports.registerWithPassword = async (req, res, next) => {
         //    const user = new User({userId: id});
         //    await user.save();
         const user = new User({
+            _id: new mongoose.Types.ObjectId(), //new mongoose.Types.ObjectId().toHexString()
             username,
             email,
             password: hashedPassword,
@@ -199,54 +200,74 @@ exports.registerWithGoogle = async (req, res, next) => {
     try {
         // get code from query string
         const code = req.query.code; // will be a string
+        console.log(`code: ${code}`);
+        console.log("///////////////////////////////////");
+        console.log("///////////////////////////////////");
 
         // get id and access token with the code
         const { id_token, access_token } = await getGoogleOauthTokens({ code });
 
+        console.log(`id_token: ${id_token}`);
+        console.log("///////////////////////////////////");
+        console.log("///////////////////////////////////");
+        console.log(`access_token: ${access_token}`);
+        console.log("///////////////////////////////////");
+        console.log("///////////////////////////////////");
+
         // get user with tokens
-        const isVerified = jwt.verify(id_token);
-        if (!isVerified){
-            return res.json('User not verfied. id_token has been tampered with');
-        }
-        const googleUser = jwt.decode(id_token);
+        // const isVerified = jwt.verify(id_token, process.env.GOOGLE_OAUTH_CLIENT_ID);
+        // console.log({ isVerified });
+        // console.log("///////////////////////////////////");
+        // console.log("///////////////////////////////////");
+        // if (!isVerified){
+        //     return res.json('User not verified. id_token has been tampered with');
+        // }
+        // const googleUser = jwt.decode(id_token);
         // const googleUser = await getGoogleUser({ id_token, access_token });
-        // const googleUser = await getGoogleUser(id_token, access_token);
+        const googleUser = await getGoogleUser(id_token, access_token);
+        // console.log(googleUser);
+        // res.send({googleUser});
+        // console.log("///////////////////////////////////");
+        // console.log("///////////////////////////////////");
+        // const googleUser2 = jwt.decode(id_token);
+        // console.log(googleUser2)
 
-        if (!googleUser.verified_email) {
-            return res.status(403).send('Google account is not verified');
-        }
+        // if (googleUser.verified_email === false) {
+        //     return res.status(403).send('Google account is not verified');
+        // }
 
-        // find user by email and/or google_id
-        // const emailExists = await User.findOne({email: googleUser.email});
-        // const googleUserExists = await User.findOne({google_id: googleUser.id});
-        const emailExists = await User.exists({email: googleUser.email});
-        const googleUserExists = await User.exists({google_id: googleUser.id});
+        // // find user by email and/or google_id
+        // // const emailExists = await User.findOne({email: googleUser.email});
+        // // const googleUserExists = await User.findOne({google_id: googleUser.id});
+        // const emailExists = await User.exists({email: googleUser.email});
+        // const googleUserExists = await User.exists({google_id: googleUser.id});
 
-        if (emailExists || googleUserExists) {
-            return res.status(403).send('User already exists');
-        }
+        // if (emailExists || googleUserExists) {
+        //     return res.status(403).send('User already exists');
+        // }
 
-        // User model from Models
-        const user = new User.create({
-            email: googleUser.email,
-            username: googleUser.name,
-            picture: googleUser.picture,
-            google_id: googleUser.id,
-            google_email: googleUser.email,
-            role: 'user',
-        });
+        // // User model from Models
+        // const user = new User.create({
+        //     _id: new mongoose.Types.ObjectId(),
+        //     email: googleUser.email,
+        //     username: googleUser.name,
+        //     picture: googleUser.picture,
+        //     google_id: googleUser.id,
+        //     google_email: googleUser.email,
+        //     role: 'user',
+        // });
 
-        // create session
-        // const session = await createSession();
-        req.session.user_id = user._id;
-        req.session.username = user.username;
-        req.session.role = user.role;
+        // // create session
+        // // const session = await createSession();
+        // req.session.user_id = user._id;
+        // req.session.username = user.username;
+        // req.session.role = user.role;
 
-        // redirect the client
-        // const clientRoot = process.env.CLIENT_DOMAIN;
-        // const clientEndpoint = `${clientRoot}/${user.username}`;
-        const clientEndpoint = `http://localhost:3000/${user.username}`;
-        res.redirect(clientEndpoint);
+        // // redirect the client
+        // // const clientRoot = process.env.CLIENT_DOMAIN;
+        // // const clientEndpoint = `${clientRoot}/${user.username}`;
+        // const clientEndpoint = `http://localhost:3000/${user.username}`;
+        // res.redirect(clientEndpoint);
     } catch (error) {
         console.log(error);
     }
@@ -341,9 +362,10 @@ exports.loginWithGoogle = async (req, res, next) => {
         // get user with tokens
         const isVerified = jwt.verify(id_token);
         if (!isVerified){
-            return res.json({message: 'User not verfied. id_token has been tampered with'});
+            return res.json({message: 'User not verified. id_token has been tampered with'});
         }
         const googleUser = jwt.decode(id_token);
+
 
         // find user by email or google_id
         const user = await User.findOne({google_email: googleUser.email});
@@ -433,7 +455,7 @@ exports.addGoogleLogin = async (req, res, next) => {
         // get user with tokens
         const isVerified = jwt.verify(id_token);
         if (!isVerified){
-            return res.json({message: 'User not verfied. id_token has been tampered with'});
+            return res.json({message: 'User not verified. id_token has been tampered with'});
         }
         const googleUser = jwt.decode(id_token);
 

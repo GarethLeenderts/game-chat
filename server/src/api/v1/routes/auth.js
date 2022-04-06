@@ -36,17 +36,21 @@ const router = express.Router();
 // router.post('/register/:strategy', checkAuthenticated, checkIfUserExists, registerUser);
 // router.post('/login/:strategy', checkAuthenticated, loginUser);
 
-router.post('/register', checkAuthenticated, checkIfUserExists, registerWithPassword);
-// router.post('/register/oauth/google', checkAuthenticated, checkIfUserExists, registerWithGoogle);
-router.post('/register/oauth/linkedin', checkAuthenticated, checkIfUserExists, registerWithLinkedin);
-router.post('/register/oauth/github', checkAuthenticated, checkIfUserExists, registerWithGithub);
-router.post('/register/oauth/facebook', checkAuthenticated, checkIfUserExists, registerWithFacebook);
-
+// router.post('/register', checkAuthenticated, checkIfUserExists, registerWithPassword);
+router.post('/register', registerWithPassword);
 router.get('/register/oauth/google', registerWithGoogle);
+router.post('/login', loginWithPassword);
+router.get('/login/oauth/google', loginWithGoogle);
 
-router.post('/login', checkAuthenticated, loginWithPassword);
-router.post('/login/oauth/google', checkAuthenticated, loginWithGoogle);
-router.post('/login/oauth/linkedin', checkAuthenticated, loginWithLinkedin);
-router.post('/login/oauth/github', checkAuthenticated, loginWithGithub);
-router.post('/login/oauth/facebook', checkAuthenticated, loginWithFacebook);
+// router.post('/register/oauth/google', checkAuthenticated, checkIfUserExists, registerWithGoogle);
+// router.post('/register/oauth/linkedin', checkAuthenticated, checkIfUserExists, registerWithLinkedin);
+// router.post('/register/oauth/github', checkAuthenticated, checkIfUserExists, registerWithGithub);
+// router.post('/register/oauth/facebook', checkAuthenticated, checkIfUserExists, registerWithFacebook);
+
+
+// router.post('/login', checkAuthenticated, loginWithPassword);
+// router.post('/login/oauth/google', checkAuthenticated, loginWithGoogle);
+// router.post('/login/oauth/linkedin', checkAuthenticated, loginWithLinkedin);
+// router.post('/login/oauth/github', checkAuthenticated, loginWithGithub);
+// router.post('/login/oauth/facebook', checkAuthenticated, loginWithFacebook);
 module.exports = router;
