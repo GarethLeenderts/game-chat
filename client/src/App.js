@@ -4,6 +4,7 @@ import React from 'react';
 import RegistrationForm from './Pages/AuthPages/Register';
 import LoginForm from './Pages/AuthPages/Login';
 import Home from './Pages/Home.js';
+import UserDashboard from './Pages/UserPages/Dashboard';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 const App = () => {
@@ -16,6 +17,7 @@ const App = () => {
         <Route path="/home" element={<Home />}></Route>
         <Route path="/register" element={<RegistrationForm />}></Route>
         <Route path="/login" element={<LoginForm />}></Route>
+        <Route path="/:username" element={<UserDashboard />}></Route>
       </Routes>
     </Router>
   );
