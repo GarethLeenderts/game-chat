@@ -1,12 +1,13 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 
 
 const { generateUniqueUsername } = require('../services/users');
 const User = require('../models/User');
 
 // const {
-//     registerWithPassword,
+//     registerWithPassword,/
 //     registerWithGoogle,
 //     registerWithLinkedin,
 //     registerWithGithub,
@@ -215,39 +216,40 @@ exports.registerWithGoogle = async (req, res, next) => {
         console.log("///////////////////////////////////");
 
         // get user with tokens
-        // const isVerified = jwt.verify(id_token, process.env.GOOGLE_OAUTH_CLIENT_ID);
-        // console.log({ isVerified });
-        // console.log("///////////////////////////////////");
-        // console.log("///////////////////////////////////");
-        // if (!isVerified){
-        //     return res.json('User not verified. id_token has been tampered with');
-        // }
+        // const isVerified = jwt.verify(id_token, 'some kind of private key'); // don't have access to the private key
         // const googleUser = jwt.decode(id_token);
-        // const googleUser = await getGoogleUser({ id_token, access_token });
         const googleUser = await getGoogleUser(id_token, access_token);
         // console.log(googleUser);
         // res.send({googleUser});
         // console.log("///////////////////////////////////");
         // console.log("///////////////////////////////////");
-        // const googleUser2 = jwt.decode(id_token);
-        // console.log(googleUser2)
 
-        // if (googleUser.verified_email === false) {
-        //     return res.status(403).send('Google account is not verified');
-        // }
+        if (googleUser.verified_email === false) {
+            return res.status(403).send('Google account is not verified');
+        };
 
-        // // find user by email and/or google_id
-        // // const emailExists = await User.findOne({email: googleUser.email});
-        // // const googleUserExists = await User.findOne({google_id: googleUser.id});
-        // const emailExists = await User.exists({email: googleUser.email});
-        // const googleUserExists = await User.exists({google_id: googleUser.id});
+        // find user by email and/or google_id
+        // const emailExists = await User.findOne({email: googleUser.email});
+        // const googleUserExists = await User.findOne({google_id: googleUser.id});
+        const emailExists = await User.exists({email: googleUser.email});
+        const googleUserExists = await User.exists({google_id: googleUser.id});
 
-        // if (emailExists || googleUserExists) {
-        //     return res.status(403).send('User already exists');
-        // }
+        if (emailExists || googleUserExists) {
+            return res.status(403).send('User already exists');
+        };
 
-        // // User model from Models
-        // const user = new User.create({
+        const formattedUsername = googleUser.name.split(' ').join('');
+        // User model from Models
+        const user = await User.create({
+            _id: new mongoose.Types.ObjectId(),
+            email: googleUser.email,
+            username: formattedUsername,
+            picture: googleUser.picture,
+            google_id: googleUser.id,
+            google_email: googleUser.email,
+            role: 'user',
+        });
+        // const user = new User({
         //     _id: new mongoose.Types.ObjectId(),
         //     email: googleUser.email,
         //     username: googleUser.name,
@@ -256,24 +258,23 @@ exports.registerWithGoogle = async (req, res, next) => {
         //     google_email: googleUser.email,
         //     role: 'user',
         // });
+        // await user.save();
 
-        // // create session
-        // // const session = await createSession();
-        // req.session.user_id = user._id;
-        // req.session.username = user.username;
-        // req.session.role = user.role;
+        // create session
+        // const session = await createSession();
+        req.session.user_id = user._id;
+        req.session.username = user.username;
+        req.session.role = user.role;
 
-        // // redirect the client
-        // // const clientRoot = process.env.CLIENT_DOMAIN;
-        // // const clientEndpoint = `${clientRoot}/${user.username}`;
-        // const clientEndpoint = `http://localhost:3000/${user.username}`;
-        // res.redirect(clientEndpoint);
+        // redirect the client
+        // const clientRoot = process.env.CLIENT_DOMAIN;
+        // const clientEndpoint = `${clientRoot}/${user.username}`;
+        const clientEndpoint = `http://localhost:3000/${user.username}`;
+        res.redirect(clientEndpoint);
     } catch (error) {
         console.log(error);
-    }
-    
-
-}
+    };
+};
 // exports.registerWithLinkedin = async (req, res, next) => {
 
 // }

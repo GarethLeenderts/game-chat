@@ -10,7 +10,7 @@ const session = require('express-session');
 const MongoSessionStore = require('connect-mongo');
 
 const AuthRouter = require('./api/v1/routes/auth.js');
-// const UserRouter = require('./api/v1/routes/users');
+const UserRouter = require('./api/v1/routes/users');
 
 
 
@@ -61,6 +61,7 @@ app.use(session(sessionOptions));
 
 // ======= ROUTER MIDDLEWARE =======
 router.use('/auth', AuthRouter);
+router.use('/:username', UserRouter);
 // router.use('/:username', protectRoute, UserRouter);
 // router.use('/game', gameRoutes);
 
