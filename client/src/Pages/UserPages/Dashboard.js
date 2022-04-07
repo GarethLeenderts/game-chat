@@ -9,31 +9,75 @@ const serverLocation = process.env.REACT_APP_PUBLIC_SERVER_ENDPOINT;
 const UserDashboard = () => {
     
     const { username } = useParams();
-    // const userData = await axios.get(`${serverLocation}/${username}`);
 
-    // const [userName, setUserName] = useState(username);
     const [userData, setUserData] = useState({});
+    const [isLoading, setLoading] = useState(true);
 
     const getUserData = async (username) => {
-        const { user } = await axios.get(`${serverLocation}/${username}`);
-        return user;
+        try {
+            const response = await axios.get(`${serverLocation}/users/${username}`);
+            setUserData(JSON.parse(response.data));
+        } catch (error) {
+            console.log(error);
+        }
     };
+    // const getUserData = async () => {
+    //     // console.log(username);
+    //     // const { username } = useParams();
+    //     try {
+    //         const response = await axios.get(`${serverLocation}/users/${username}`);
+    //         setUserData(JSON.parse(response.data));
+    //     } catch (error) {
+    //         console.log(error);
+    //     }
+    // };
 
     const usernameMemo = useMemo(() => {return username;}, [username]); // Memoization(caching) of username
 
     useEffect(() => {
-        const user = getUserData(usernameMemo);
-        setUserData(user);
+        getUserData(usernameMemo);
+        setLoading(false);
     }, [usernameMemo]);
     // useEffect(() => {
-    //     const user = getUserData(username);
-    //     setUserData(user);
-    // }, [username]);
+    //     getUserData();
+    //     setLoading(false);
+    // }, []);
+
+    if (isLoading === true) {
+        return (
+            <div>
+                <h1>Still loading...</h1>
+            </div>
+        )
+    }
 
     return (
+        <>
         <div>
-            {Object.keys(userData).map((key) => {return <p>{key}: {userData[key]} </p>})}
+            <div>
+                <h5>{username}</h5>
+            </div>
+            <div>
+                <h6>{userData.email}</h6>
+            </div>
+            <div>
+                {Object.keys(userData).toString()}
+            </div>
+            <div>
+                {Object.keys(userData).map((key) => {
+                    return (
+                        <div key={key}>
+                        <p><b>{key}:</b> {userData[key]} </p>
+                        </div>
+                        );
+                    }
+                )}
+            </div>
+            {/* <div>
+                {Object.entries(userData)}
+            </div> */}
         </div>
+        </>
     );
 
 };
