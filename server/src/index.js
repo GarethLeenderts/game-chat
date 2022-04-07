@@ -61,7 +61,7 @@ app.use(session(sessionOptions));
 
 // ======= ROUTER MIDDLEWARE =======
 router.use('/auth', AuthRouter);
-router.use('/:username', UserRouter);
+router.use('/users', UserRouter);
 // router.use('/:username', protectRoute, UserRouter);
 // router.use('/game', gameRoutes);
 

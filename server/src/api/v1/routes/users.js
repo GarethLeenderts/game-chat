@@ -5,6 +5,6 @@ const { getUserData } = require('../controllers/users');
 const router = express.Router();
 
 // router.post('/auth/register/:strategy', )
-router.get('/', getUserData);
+router.get('/:username', getUserData);
 
 module.exports = router;
