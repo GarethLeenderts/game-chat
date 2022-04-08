@@ -18,7 +18,7 @@ const express = require('express');
     loginWithLinkedin,
     loginWithGithub,
     loginWithFacebook,
-    logout,
+    logoutUser,
     forgotPassword,
     resetPassword
  } = require('../controllers/auth');
@@ -41,6 +41,8 @@ router.post('/register', registerWithPassword);
 router.get('/register/oauth/google', registerWithGoogle);
 router.post('/login', loginWithPassword);
 router.get('/login/oauth/google', loginWithGoogle);
+router.get('/logout', logoutUser);
+// router.get('/logout', isUserLoggedIn, logoutUser);
 
 // router.post('/register/oauth/google', checkAuthenticated, checkIfUserExists, registerWithGoogle);
 // router.post('/register/oauth/linkedin', checkAuthenticated, checkIfUserExists, registerWithLinkedin);

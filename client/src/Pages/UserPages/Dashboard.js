@@ -3,14 +3,17 @@ import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 
+import NavBar from '../../Components/Navigation/NavBar';
+
 
 const serverLocation = process.env.REACT_APP_PUBLIC_SERVER_ENDPOINT;
+
 
 const UserDashboard = () => {
     
     const { username } = useParams();
 
-    const [userData, setUserData] = useState({});
+    const [userData, setUserData] = useState({username: 'Guest'});
     const [isLoading, setLoading] = useState(true);
 
     const getUserData = async (username) => {
@@ -35,7 +38,9 @@ const UserDashboard = () => {
     const usernameMemo = useMemo(() => {return username;}, [username]); // Memoization(caching) of username
 
     useEffect(() => {
-        getUserData(usernameMemo);
+        if (usernameMemo !== 'Guest' && usernameMemo !== 'guest') {
+            getUserData(usernameMemo);
+        };
         setLoading(false);
     }, [usernameMemo]);
     // useEffect(() => {
@@ -49,11 +54,23 @@ const UserDashboard = () => {
                 <h1>Still loading...</h1>
             </div>
         )
-    }
+    };
+
+    if (userData.username === 'Guest' || userData.username === 'guest') {
+        return (
+            <div>
+                <NavBar></NavBar>
+                <div>
+                    <h1>You are a Guest</h1>
+                </div>
+            </div>
+        );
+    };
 
     return (
         <>
         <div>
+            <NavBar></NavBar>
             <div>
                 <h5>{username}</h5>
             </div>

@@ -510,7 +510,12 @@ exports.forgotPassword = async (req, res, next) => {
 exports.confirmEmail = async (req, res, next) => {
 
 };
-exports.logout = (req, res, next) => {
-    req.session.destroy();
+exports.logoutUser = async (req, res, next) => {
+    await req.session.destroy(function(err) {
+        if (err) {console.log(err)};
+
+        // res.clearCookie('connect.sid'); // SESSION_COOKIE_NAME = 'connect.sid'
+    }); // session destroyed on DB after callback inside function has finished executing
+
     res.redirect('http://localhost:3000/login').res.json({message: "You have successfully logged out."});
 };
